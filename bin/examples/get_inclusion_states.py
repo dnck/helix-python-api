@@ -1,21 +1,33 @@
+import argparse
+
 from context import api
 
-HOST = 'coo.hlxtest.net'
-HTTP_PORT = 8085
 
-NODE_HTTP_ENDPOINT = "http://{}:{}".format(HOST, HTTP_PORT)
-API_CLIENT = api.BaseHelixAPI()
+def _get_inclusion_state(node_http_endpoint, transactions=['0'*64]):
+    latest_milestone = _get_latest_milestone(node_http_endpoint)
+    print('Checking whether {} is approved by {}'.format(transactions[0], latest_milestone[0]))
+    response = API_CLIENT.get_inclusion_states_of_parents(node_http_endpoint, transactions, latest_milestone)
+    print(response['states'].pop())
 
-def get_latest_milestone():
-    response = API_CLIENT.get_node_info(NODE_HTTP_ENDPOINT)
+def _get_latest_milestone(node_http_endpoint):
+    response = API_CLIENT.get_node_info(node_http_endpoint)
     latest_milestone = response['latestSolidSubtangleMilestone']
     return [latest_milestone]
 
-def get_inclusion_state():
-    transaction = ['9c9f31235c36700dc5819b2c71ab3595eb2da41017b1cfabc82c40b75df94c69']
-    latest_milestone = get_latest_milestone()
-    print('Checking whether {} is approved by {}'.format(transaction[0], latest_milestone[0]))
-    response = API_CLIENT.get_inclusion_states_of_parents(NODE_HTTP_ENDPOINT, transaction, latest_milestone)
-    print(response['states'].pop())
+if __name__ == '__main__':
+    API_CLIENT = api.BaseHelixAPI()
 
-get_inclusion_state()
+    PARSER = argparse.ArgumentParser(description='Get info from a node.')
+    PARSER.add_argument('-host',
+        metavar='host', type=str, default='coo.hlxtest.net',
+        help='Public IP of the host'
+    )
+    PARSER.add_argument('-port',
+        metavar='port', type=str, default='8085',
+        help='HTTP port of the host public IP'
+    )
+    ARGS = PARSER.parse_args()
+
+    NODE_HTTP_ENDPOINT = "http://{}:{}".format(ARGS.host, ARGS.port)
+
+    _get_inclusion_state(NODE_HTTP_ENDPOINT)

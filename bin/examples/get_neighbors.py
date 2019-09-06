@@ -2,6 +2,7 @@ import argparse
 
 from context import api
 
+
 def _get_neighbors(node_http_endpoint):
     response = API_CLIENT.get_neighbors(node_http_endpoint)
     neighbors = response['neighbors']

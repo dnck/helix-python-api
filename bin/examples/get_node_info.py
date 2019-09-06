@@ -23,4 +23,4 @@ if __name__ == '__main__':
 
     NODE_HTTP_ENDPOINT = "http://{}:{}".format(ARGS.host, ARGS.port)
 
-    get_node_info(NODE_HTTP_ENDPOINT)
+    _get_node_info(NODE_HTTP_ENDPOINT)

@@ -3,7 +3,7 @@ import argparse
 from context import api
 
 
-def get_node_info(node_http_endpoint):
+def _get_node_info(node_http_endpoint):
     response = API_CLIENT.get_node_info(node_http_endpoint)
     print(response)
 

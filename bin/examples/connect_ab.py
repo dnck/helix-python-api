@@ -1,9 +1,10 @@
 from context import api
 import argparse
 
-API_CLIENT = api.BaseHelixAPI()
 
 if __name__ == "__main__":
+    API_CLIENT = api.BaseHelixAPI()
+
     parser = argparse.ArgumentParser(description='')
     parser.add_argument('-ip0',type=str, default='172.20.0.2')
     parser.add_argument('-ip1',type=str, default='coo.hlxtest.net')

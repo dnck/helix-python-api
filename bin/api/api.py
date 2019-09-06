@@ -36,7 +36,9 @@ class BaseHelixAPI:
             "findTransactions": {"command": "findTransactions", "addresses": []},
             "getTips": {"command": "getTips"},
             "getTransactionsToApprove": {"command": "getTransactionsToApprove"},
-            "getInclusionStates": {"command": "getInclusionStates", "transactions": [], "tips": []}
+            "getInclusionStates": {"command": "getInclusionStates",    "transactions": [], "tips": []},
+            "startSpamming": {"command": "startSpamming", "spamDelay": int},
+            "stopSpamming": {"command": "stopSpamming"}
         }
 
     def get_node_info(self, http_endpoint):
@@ -130,6 +132,30 @@ class BaseHelixAPI:
         command["transactions"] = parent_transactions
         command["tips"] = child_transactions
         return send_request(http_endpoint, command)
+
+    def start_spamming(self, http_endpoint, spam_interval):
+        """
+        Implements the startSpamming api request and prints the results
+
+        Args:
+            http_endpoint (str)
+            spam_interval (int) - time in ms between spam tx
+        """
+        command = self.commands["startSpamming"]
+        command["spamDelay"] = spam_interval
+        return send_request(http_endpoint, command)
+
+    def stop_spamming(self, http_endpoint):
+        """
+        Implements the startSpamming api request and prints the results
+
+        Args:
+            http_endpoint (str)
+            spam_interval (int) - time in ms between spam tx
+        """
+        command = self.commands["stopSpamming"]
+        return send_request(http_endpoint, command)
+
 
 def send_request(node_http_endpoint, command):
     """Posts the command to the http endpoint of the node"""

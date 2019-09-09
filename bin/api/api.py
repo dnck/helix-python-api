@@ -122,11 +122,12 @@ class BaseHelixAPI:
 
     def get_inclusion_states_of_parents(self, http_endpoint, parent_transactions, child_transactions):
         """
-        Implements the removeNeighbors api request and prints the results
+        Implements the getInclusionStates api request and return the results
 
         Args:
             http_endpoint (str)
-            uris (list)
+            parent_transactions (list)
+            child_transactions (list)
         """
         command = self.commands["getInclusionStates"]
         command["transactions"] = parent_transactions

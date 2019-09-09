@@ -13,15 +13,19 @@ LEVELS = {'info': logging.INFO, 'debug': logging.DEBUG}
 
 class ResultsManager:
     """
+    If options are provided, then a log file is created and saved under:
+        parentdir/date/uuid/log_filename
+        
+    The date and uuid is internally generated.
     """
-    def __init__(self, options={ 'stdout_only': True, 'level': 'info',
-        'parentdir': str, 'log_filename': str}
+    def __init__(self,
+        options={
+            'stdout_only': True,
+            'level': 'info',
+            'parentdir': str,
+            'log_filename': str
+        }
     ):
-        """
-        If options are provided, then a log file is created and saved under:
-            parentdir/date/uuid/log_filename
-        The date and uuid is internally generated.
-        """
         self.logger = logging
         self.level = LEVELS[options['level']]
         if not options['stdout_only']:

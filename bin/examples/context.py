@@ -8,3 +8,4 @@ sys.path.insert(0,
     )
 
 from api import api
+from api import results_manager

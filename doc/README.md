@@ -1,2 +1,0 @@
-# WIP
-Documentation to come

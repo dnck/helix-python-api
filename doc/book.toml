@@ -1,8 +1,0 @@
-[book]
-authors = ["Daniel Cook"]
-multilingual = false
-src = "bin"
-title = "The Noise Book"
-
-[output.html]
-mathjax-support = true

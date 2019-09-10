@@ -14,15 +14,20 @@ from datetime import datetime
 from context import results_manager
 import threading
 
+
 IO_OPTIONS = {
-    'stdout_only': True, 'level': 'info', 'parentdir': '/home/hlx-dev/helix/helix-python-api/examples',
+    'stdout_only': True,
+    'level': 'info',
+    'parentdir': '/home/hlx-dev/helix/helix-python-api/examples',
     'log_filename': 'ctps.log'
 }
+
 log_manager = results_manager.ResultsManager(IO_OPTIONS)
+
 logger = log_manager.logger
 
 
-template = {
+txhash_template = {
     'hash': None,
     'address1': None,
     'msg': None,
@@ -41,30 +46,29 @@ template = {
 
 txhash_pattern = regex.compile(r"\b[a-f0-9]{64}")
 
-def convert_response(template, response):
+def convert_response(txhash_template, response):
     response = [i.split() for i in response['tx_hash']]
-    template['hash'] = response[0][0]
-    template['address1'] = response[1][0]
-    template['msg'] = response[2]
-    template['address2'] = response[3][0]
-    template['value'] = response[4][0]
-    template['timestamp'] = response[5][0]
-    template['timestamp'] = response[6][0]
-    template['currentIndex'] = response[7][0]
-    template['lastIndex'] = response[8][0]
-    template['bundleHash'] = response[9][0]
-    template['trunk'] = response[10][0]
-    template['branch'] = response[11][0]
-    template['arrivalTime'] = response[12][0]
-    template['tagValue'] = response[13][0]
-    return template
+    txhash_template['hash'] = response[0][0]
+    txhash_template['address1'] = response[1][0]
+    txhash_template['msg'] = response[2]
+    txhash_template['address2'] = response[3][0]
+    txhash_template['value'] = response[4][0]
+    txhash_template['timestamp'] = response[5][0]
+    txhash_template['timestamp'] = response[6][0]
+    txhash_template['currentIndex'] = response[7][0]
+    txhash_template['lastIndex'] = response[8][0]
+    txhash_template['bundleHash'] = response[9][0]
+    txhash_template['trunk'] = response[10][0]
+    txhash_template['branch'] = response[11][0]
+    txhash_template['arrivalTime'] = response[12][0]
+    txhash_template['tagValue'] = response[13][0]
+    return txhash_template
 
 def convert_oracle_topic(d):
     temp = {'address': None}
     for k,v in d.items():
         temp['address'] = k.split('ORACLE_')[1]
         for item in json.loads(v[0]):
-            #temp.update((item))
             temp.update({str(item['bundle_index']): item})
     return temp
 
@@ -99,9 +103,10 @@ def subscribe_to_zmq_topics(host, port, pending):
         now = datetime.now()
         data = {string.split(' ')[0]: string.split(' ')[1:]}
         match = regex.match(txhash_pattern, list(data.keys())[0])
+
         # this comes first
         if 'tx_hash' in data.keys(): # tx_hash topic from MsgQPrvImpl.publishTx
-            data = convert_response(template, data)
+            data = convert_response(txhash_template, data)
             if data['value'] != '0':
                 value_tx = (data['hash'], now)
                 pending.put(value_tx)
@@ -111,11 +116,13 @@ def subscribe_to_zmq_topics(host, port, pending):
                     )
                 )
                 #print('\n')
+
         # then comes this
         if list(data.keys())[0].startswith(
             'ORACLE' # oracle topic from Node.processReceivedData
         ):
             data = convert_oracle_topic(data)
+            
         # then comes this?
         if match: # tx topic from where?
             data = json.loads(data[match.string][0])

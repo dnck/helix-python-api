@@ -22,8 +22,16 @@ if __name__ == '__main__':
         metavar='port', type=str, default='8085',
         help='HTTP port of the host public IP'
     )
+    PARSER.add_argument('-ssl',
+        metavar='http or https', type=str, default=None,
+        help='http or https'
+    )
     ARGS = PARSER.parse_args()
 
-    NODE_HTTP_ENDPOINT = "http://{}:{}".format(ARGS.host, ARGS.port)
+    if not (ARGS.ssl is None):
+        NODE_HTTP_ENDPOINT = "https://{}:{}".format(ARGS.host, ARGS.port)
+    else:
+        NODE_HTTP_ENDPOINT = "http://{}:{}".format(ARGS.host, ARGS.port)
+
 
     _get_neighbors(NODE_HTTP_ENDPOINT)

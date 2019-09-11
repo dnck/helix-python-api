@@ -30,6 +30,8 @@ if __name__ == '__main__':
         metavar='port', type=str, default='80',
         help='HTTP port of the host public IP'
     )
+    PARSER.add_argument('-ssl0',type=str, default=None)
+    
     PARSER.add_argument('-host1',
         metavar='host', type=str, default='coo.hlxtest.net',
         help='Public IP of the host'
@@ -38,10 +40,21 @@ if __name__ == '__main__':
         metavar='port', type=str, default='8085',
         help='HTTP port of the host public IP'
     )
+    PARSER.add_argument('-ssl1',type=str, default=None)
+
     ARGS = PARSER.parse_args()
 
-    NODE_HTTP_ENDPOINT_A = "http://{}:{}".format(ARGS.host0, ARGS.port0)
-    NODE_HTTP_ENDPOINT_B = "http://{}:{}".format(ARGS.host1, ARGS.port1)
+    HTTP = "http://{}:{}"
+    HTTPS = "https://{}:{}"
+
+    if not (ARGS.ssl0 is None):
+        NODE_HTTP_ENDPOINT_A = HTTPS.format(ARGS.host0, ARGS.port0)
+    else:
+        NODE_HTTP_ENDPOINT_A = HTTP.format(ARGS.host0, ARGS.port0)
+    if not (ARGS.ssl1 is None):
+        NODE_HTTP_ENDPOINT_B = HTTPS.format(ARGS.host1, ARGS.port1)
+    else:
+        NODE_HTTP_ENDPOINT_B = HTTP.format(ARGS.host1, ARGS.port1)
 
     while True:
         _compare_neighbors(NODE_HTTP_ENDPOINT_A, NODE_HTTP_ENDPOINT_B)

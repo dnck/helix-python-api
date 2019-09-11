@@ -20,10 +20,22 @@ if __name__ == '__main__':
         metavar='port', type=str, default='8085',
         help='HTTP port of the host public IP'
     )
+    PARSER.add_argument('-ssl',
+        metavar='http or https', type=str, default=None,
+        help='http or https'
+    )
+    PARSER.add_argument('-address',
+        metavar='address', type=str, default=\
+        '9474289ae28f0ea6e3b8bedf8fc52f14d2fa9528a4eb29d7879d8709fd2f6d37',
+        help='address to check for'
+    )
     ARGS = PARSER.parse_args()
 
-    NODE_HTTP_ENDPOINT = "http://{}:{}".format(ARGS.host, ARGS.port)
+    if not (ARGS.ssl is None):
+        NODE_HTTP_ENDPOINT = "https://{}:{}".format(ARGS.host, ARGS.port)
+    else:
+        NODE_HTTP_ENDPOINT = "http://{}:{}".format(ARGS.host, ARGS.port)
 
-    address = ['9474289ae28f0ea6e3b8bedf8fc52f14d2fa9528a4eb29d7879d8709fd2f6d37']
+    address = [PARSER.address]
 
     _test_find_transactions(NODE_HTTP_ENDPOINT,addresses=address)

@@ -26,9 +26,22 @@ if __name__ == '__main__':
         metavar='port', type=str, default='8085',
         help='HTTP port of the host public IP'
     )
-
+    PARSER.add_argument('-ssl',
+        metavar='http or https', type=str, default=None,
+        help='http or https'
+    )
+    PARSER.add_argument('-txhash',
+        metavar='txhash', type=str, default=\
+        '0000ba8d669f2b4b31d43cd76c9255456e86a8a97705fe8cd2203eb80b9a618c',
+        help='txhash to check on'
+    )
     ARGS = PARSER.parse_args()
 
-    NODE_HTTP_ENDPOINT = "http://{}:{}".format(ARGS.host, ARGS.port)
-    TXHASH = '0000ba8d669f2b4b31d43cd76c9255456e86a8a97705fe8cd2203eb80b9a618c'
-    get_inclusion_state(NODE_HTTP_ENDPOINT, [TXHASH])
+    if not (ARGS.ssl is None):
+        NODE_HTTP_ENDPOINT = "https://{}:{}".format(ARGS.host, ARGS.port)
+    else:
+        NODE_HTTP_ENDPOINT = "http://{}:{}".format(ARGS.host, ARGS.port)
+
+    TXHASH = [ARGS.txhash]
+    
+    get_inclusion_state(NODE_HTTP_ENDPOINT, TXHASH)

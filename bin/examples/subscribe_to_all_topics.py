@@ -22,89 +22,103 @@ import os
 import regex
 import zmq
 
+from context import results_manager
+
+IO_OPTIONS = {
+    'stdout_only': True,
+    'level': 'info',
+    'parentdir': '/Users/cook/helix/helix-python-api/bin/examples/results',
+    'log_filename': 'ctps.log'
+}
+
+LOG_MANAGER = results_manager.ResultsManager(IO_OPTIONS)
+
+LOGGER = LOG_MANAGER.logger
+
+class ResponseConverter():
+
+    def __init__(self):
+
+        self.txhash_pattern = regex.compile(r"\b[a-f0-9]{64}")
+
+        self.txhash_template = {
+            'hash': None,
+            'address': None,
+            'msg': None,
+            'signature': None,
+            'value': None,
+            'bundleNonceHash': None,
+            'timestamp': None,
+            'currentIndex': None,
+            'lastIndex': None,
+            'bundleHash': None,
+            'trunk': None,
+            'branch': None,
+            'arrivalTime': None,
+            'tagValue': None
+        }
+
+    def match_txhash(self, str):
+        return regex.match(self.txhash_pattern, str)
+
+    def convert_to_transaction(self, response):
+        response = [i.split() for i in response['tx_hash']]
+        self.txhash_template['hash'] = response[0][0]
+        self.txhash_template['address'] = response[1][0]
+        self.txhash_template['msg'] = response[2]
+        self.txhash_template['signature'] = response[3][0]
+        self.txhash_template['value'] = response[4][0]
+        self.txhash_template['bundleNonceHash'] = response[5][0]
+        self.txhash_template['timestamp'] = response[6][0]
+        self.txhash_template['currentIndex'] = response[7][0]
+        self.txhash_template['lastIndex'] = response[8][0]
+        self.txhash_template['bundleHash'] = response[9][0]
+        self.txhash_template['trunk'] = response[10][0]
+        self.txhash_template['branch'] = response[11][0]
+        self.txhash_template['arrivalTime'] = response[12][0]
+        self.txhash_template['tagValue'] = response[13][0]
+        return self.txhash_template
+
+    def convert_oracle_topic(self, data):
+        temp = {'address': None}
+        for k,v in data.items():
+            temp['address'] = k.split('ORACLE_')[1]
+            for item in json.loads(v[0]):
+                temp.update({str(item['bundle_index']): item})
+        return temp
+
 
 def subscribe_to_zmq_topics(host, port):
+    converter = ResponseConverter()
     context = zmq.Context()
     socket = context.socket(zmq.SUB)
     socket.connect("tcp://{}:{}".format(host, port))
     # subscribe to all topics with an empty string
     socket.setsockopt_string(zmq.SUBSCRIBE, '')
-    value_tx = (None, None)
     while True:
         string = socket.recv_string()
         data = {string.split(' ')[0]: string.split(' ')[1:]}
         # tx_hash topic from Java MsgQPrvImpl.publishTx
         if 'tx_hash' in data.keys():
-            data = convert_txhash_topic(txhash_template, data)
+            data = converter.convert_to_transaction(data)
+            LOGGER.info("{}".format({"tx_hash": data}))
+            continue
         # oracle topic from Java Node.processReceivedData
         if list(data.keys())[0].startswith('ORACLE'):
-            data = convert_oracle_topic(data)
+            data = converter.convert_oracle_topic(data)
+            LOGGER.info("{}".format({"oracle": data}))
+            continue
         # tx topic from where in Java idk??
-        match = regex.match(txhash_pattern, list(data.keys())[0])
+        match = converter.match_txhash(list(data.keys())[0])
         if match:
             data = json.loads(data[match.string][0])
             data.update({'address': match.string})
-        # all other topics are already formatted pretty
-        write_dict_to_json('./results/test.json', data)
-        # TODO: label the topics during input.
-
-txhash_pattern = regex.compile(r"\b[a-f0-9]{64}")
-
-txhash_template = {
-    'hash': None,
-    'address1': None,
-    'msg': None,
-    'address2': None,
-    'value': None,
-    'bundleNonceHash': None,
-    'timestamp': None,
-    'currentIndex': None,
-    'lastIndex': None,
-    'bundleHash': None,
-    'trunk': None,
-    'branch': None,
-    'arrivalTime': None,
-    'tagValue': None
-}
-
-def convert_txhash_topic(txhash_template, response):
-    response = [i.split() for i in response['tx_hash']]
-    txhash_template['hash'] = response[0][0]
-    txhash_template['address1'] = response[1][0]
-    txhash_template['msg'] = response[2]
-    txhash_template['address2'] = response[3][0]
-    txhash_template['value'] = response[4][0]
-    txhash_template['timestamp'] = response[5][0]
-    txhash_template['timestamp'] = response[6][0]
-    txhash_template['currentIndex'] = response[7][0]
-    txhash_template['lastIndex'] = response[8][0]
-    txhash_template['bundleHash'] = response[9][0]
-    txhash_template['trunk'] = response[10][0]
-    txhash_template['branch'] = response[11][0]
-    txhash_template['arrivalTime'] = response[12][0]
-    txhash_template['tagValue'] = response[13][0]
-    return txhash_template
-
-def convert_oracle_topic(d):
-    temp = {'address': None}
-    for k,v in d.items():
-        temp['address'] = k.split('ORACLE_')[1]
-        for item in json.loads(v[0]):
-            temp.update({str(item['bundle_index']): item})
-    return temp
-
-def write_dict_to_json(filename, data):
-    """Write an in-memory Python dictionary to a formatted .json file."""
-    filename = os.path.normpath(filename)
-    with open(filename, "a") as file_obj:
-        json.dump(data, file_obj, indent=4, sort_keys=True)
-        file_obj.write(',\n')
-
-def mkdir_if_not_exists(dirname):
-    if not os.path.isdir(dirname):
-        os.mkdir(dirname)
+            LOGGER.info("{}".format({"tx": data}))
+            continue
+        LOGGER.info("{}".format(data))
 
 if __name__ == '__main__':
+
     parser = argparse.ArgumentParser(
         description='Subscribe to a stream of data'
     )
@@ -129,7 +143,5 @@ if __name__ == '__main__':
         help='Directory to write the json file to'
     )
     args = parser.parse_args()
-
-    mkdir_if_not_exists(args.logs_dir)
 
     subscribe_to_zmq_topics(args.host, args.port)

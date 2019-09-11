@@ -24,7 +24,7 @@ if __name__ == '__main__':
     PARSER = argparse.ArgumentParser(description='Get info from a node.')
     # Compare this host
     PARSER.add_argument('-host0',
-        metavar='host', type=str, default='79.193.43.206',
+        metavar='host', type=str, default='87.171.74.29',
         help='Public IP of the host'
     )
     PARSER.add_argument('-port0',

@@ -16,7 +16,7 @@ if __name__ == '__main__':
         help='Public IP of the host'
     )
     PARSER.add_argument('-port',
-        metavar='port', type=str, default='8085',
+        metavar='port', type=str, default='80',
         help='HTTP port of the host public IP'
     )
     ARGS = PARSER.parse_args()

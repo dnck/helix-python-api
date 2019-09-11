@@ -13,12 +13,24 @@ import time
 from datetime import datetime
 from context import results_manager
 import threading
+import random
+
+TESTNET_HOSTS =  [
+    "coo.hlxtest.net:8085",
+    "zmq.hlxtest.net:8085",
+    "hlxtest.net:8085",
+    "node1.hlxtest.net:8085",
+    "node2.hlxtest.net:8085",
+    "node3.hlxtest.net:8085",
+    "helix-esports.net:8085",
+    "79.193.43.206:80"
+]
 
 
 IO_OPTIONS = {
-    'stdout_only': True,
+    'stdout_only': False,
     'level': 'info',
-    'parentdir': '/home/hlx-dev/helix/helix-python-api/examples',
+    'parentdir': '/Users/cook/helix/helix-python-api/bin/examples/results',
     'log_filename': 'ctps.log'
 }
 
@@ -102,6 +114,7 @@ def subscribe_to_zmq_topics(host, port, pending):
         string = socket.recv_string()
         now = datetime.now()
         data = {string.split(' ')[0]: string.split(' ')[1:]}
+        logger.info('Topic: {}'.format(string.split(' ')[0]))
         match = regex.match(txhash_pattern, list(data.keys())[0])
 
         # this comes first
@@ -110,35 +123,55 @@ def subscribe_to_zmq_topics(host, port, pending):
             if data['value'] != '0':
                 value_tx = (data['hash'], now)
                 pending.put(value_tx)
-                logger.info(
-                    "Observed new value tx in zmq at time: {} {}".format(
-                        value_tx[0], now
-                    )
-                )
-                #print('\n')
-
+                logger.info("Incoming value tx_hash: {}".format(value_tx[0]))
+                logger.info("Incoming value address: {}".format(
+                    data["address1"]
+                ))
+                logger.info("Incoming value bundleHash: {}".format(
+                    data["bundleHash"]
+                ))
         # then comes this
         if list(data.keys())[0].startswith(
             'ORACLE' # oracle topic from Node.processReceivedData
         ):
             data = convert_oracle_topic(data)
-            
+            logger.info('Bundle address published: {}'.format(data['address']))
+            for x in data:
+                if not (x == 'address'):
+                    logger.info(
+                        'bundle_hash: {}'.format(
+                            data[x]['bundle_hash']
+                        )
+                    )
+                    logger.info(
+                        'tx_hash: {}'.format(
+                            data[x]['tx_hash']
+                        )
+                    )
         # then comes this?
-        if match: # tx topic from where?
+        if match: # tx topic from where? and what does it mean?
             data = json.loads(data[match.string][0])
             data.update({'address': match.string})
+            logger.info('tx address: {}'.format(data['address']))
+            logger.info('tx hash: {}'.format(data['hash']))
 
 
+# You can actually randomly sample here - node_http_endpoints
 def get_inclusion_state(api_client, node_http_endpoint, pending):
+    node_http_endpoints = [node_http_endpoint.format(i) for i in TESTNET_HOSTS]
     while True:
         tx_hash_local_time = pending.get(timeout=43200.0)
+
         if tx_hash_local_time:
-            latest_milestone = _get_latest_milestone(node_http_endpoint)
-            # print(
-            #     'Checking whether {} is approved by {}'.format(
-            #         [tx_hash_local_time[0]], latest_milestone[0]
-            #     )
-            # )
+            node_http_endpoint = random.choice(node_http_endpoints)
+            latest_milestone = _get_latest_milestone(
+                api_client, node_http_endpoint
+            )
+            logger.info(
+                'Checking whether {} is approved by {}'.format(
+                    [tx_hash_local_time[0]], latest_milestone[0]
+                )
+            )
             response = api_client.get_inclusion_states_of_parents(
                 node_http_endpoint, [tx_hash_local_time[0]], latest_milestone
             )
@@ -153,27 +186,54 @@ def get_inclusion_state(api_client, node_http_endpoint, pending):
                         tx_hash_local_time[0], duration.total_seconds()
                     )
                 )
-        time.sleep(1.0)
+        time.sleep(5.0)
 
-def _get_latest_milestone(node_http_endpoint):
-    response = API_CLIENT.get_node_info(node_http_endpoint)
+def _get_latest_milestone(api_client, node_http_endpoint):
+    response = api_client.get_node_info(node_http_endpoint)
     latest_milestone = response['latestSolidSubtangleMilestone']
     return [latest_milestone]
 
 if __name__ == '__main__':
-    API_CLIENT = api.BaseHelixAPI()
 
-    parser = argparse.ArgumentParser(description='Subscribe to a stream of data')
-    parser.add_argument('--host', metavar='host', type=str, default='zmq.hlxtest.net', help='IP of host publisher')
-    parser.add_argument('--port', metavar='port', type=str, default='5556', help='Port of the host publisher')
+    api_client = api.BaseHelixAPI()
+
+    parser = argparse.ArgumentParser(
+        description='Subscribe to a stream of data'
+    )
+
+    parser.add_argument(
+        '-host',
+         metavar='host',
+         type=str,
+         default='zmq.hlxtest.net',
+         help='IP of host publisher'
+    )
+
+    parser.add_argument(
+        '-port',
+        metavar='port',
+        type=str,
+        default='5556',
+        help='Port of the host publisher'
+    )
+
     args = parser.parse_args()
 
-    node_http_endpoint = "http://{}:{}".format(args.host, 8085)
+    node_http_endpoint = "http://{}"
 
     pending =  Queue()
-    t0 = threading.Thread(target=subscribe_to_zmq_topics, args=(args.host, args.port, pending,))
+
+    t0 = threading.Thread(
+        target=subscribe_to_zmq_topics,
+        args=(args.host, args.port, pending,)
+    )
+
     #mkdir_if_not_exists('./results')
-    t1 = threading.Thread(target=get_inclusion_state, args=(API_CLIENT, node_http_endpoint, pending,))
+    t1 = threading.Thread(
+        target=get_inclusion_state,
+        args=(api_client, node_http_endpoint, pending,)
+    )
 
     t0.start()
+
     t1.start()

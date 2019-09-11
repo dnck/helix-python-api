@@ -30,5 +30,5 @@ if __name__ == '__main__':
     ARGS = PARSER.parse_args()
 
     NODE_HTTP_ENDPOINT = "http://{}:{}".format(ARGS.host, ARGS.port)
-    TXHASH = '004573d1019b63188c9c80d1885e8987aaf644ed6667f8cf54e4b60c4ff7a005'
+    TXHASH = '0000ba8d669f2b4b31d43cd76c9255456e86a8a97705fe8cd2203eb80b9a618c'
     get_inclusion_state(NODE_HTTP_ENDPOINT, [TXHASH])

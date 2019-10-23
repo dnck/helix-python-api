@@ -10,11 +10,11 @@ def _compare_neighbors(node_http_endpoint_A, node_http_endpoint_B):
     print(
         '-'*16, '\n',
         node_http_endpoint_A, '\n',
-        'ms: '+response_A['latestMilestone'], '\n',
-        'lssm '+response_A['latestSolidSubtangleMilestone'], '\n\n',
+        'round_idx: '+response_A['currentRoundIndex'], '\n',
+        'solid_round_idx '+response_A['latestSolidRoundIndex'], '\n\n',
         node_http_endpoint_B, '\n',
-        'ms: '+response_B['latestMilestone'], '\n',
-        'lssm '+response_B['latestSolidSubtangleMilestone'], '\n',
+        'round_idx: '+response_B['currentRoundIndex'], '\n',
+        'solid_round_idx: '+response_B['latestSolidRoundIndex'], '\n',
         '-'*16
     )
 

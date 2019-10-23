@@ -36,6 +36,6 @@ if __name__ == '__main__':
     else:
         NODE_HTTP_ENDPOINT = "http://{}:{}".format(ARGS.host, ARGS.port)
 
-    address = [PARSER.address]
-
+    address = [ARGS.address]
+    address = ['49f67174f87f1c7527d54788f0e43d0151b5e160dab8ead5b6d8907ab6b38c6b62c8931e']
     _test_find_transactions(NODE_HTTP_ENDPOINT,addresses=address)

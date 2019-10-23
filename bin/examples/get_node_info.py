@@ -12,7 +12,7 @@ if __name__ == '__main__':
 
     PARSER = argparse.ArgumentParser(description='Get info from a node.')
     PARSER.add_argument('-host',
-        metavar='host', type=str, default='coo.hlxtest.net',
+        metavar='host', type=str, default='nominee1.hlxtest.net',
         help='Public IP of the host'
     )
     PARSER.add_argument('-port',

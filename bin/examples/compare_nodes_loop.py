@@ -3,59 +3,30 @@ import time
 
 from context import api
 
+TESTNET_NODES = [
+    # "https://nominee1.hlxtest.net:8087",
+    "https://relayer1.hlxtest.net:8087",
+    "https://relayer2.hlxtest.net:8087",
+    "https://relayer3.hlxtest.net:8087"
+]
 
-def _compare_neighbors(node_http_endpoint_A, node_http_endpoint_B):
-    response_A = API_CLIENT.get_node_info(node_http_endpoint_A)
-    response_B = API_CLIENT.get_node_info(node_http_endpoint_B)
-    print(
-        '-'*16, '\n',
-        node_http_endpoint_A, '\n',
-        'ms: '+response_A['latestMilestone'], '\n',
-        'lssm '+response_A['latestSolidSubtangleMilestone'], '\n\n',
-        node_http_endpoint_B, '\n',
-        'ms: '+response_B['latestMilestone'], '\n',
-        'lssm '+response_B['latestSolidSubtangleMilestone'], '\n',
-        '-'*16
-    )
+def _compare_neighbors(node_http_endpoint):
+    return API_CLIENT.get_node_info(node_http_endpoint)
+
 
 if __name__ == '__main__':
+
     API_CLIENT = api.BaseHelixAPI()
 
-    PARSER = argparse.ArgumentParser(description='Get info from a node.')
-    PARSER.add_argument('-host0',
-        metavar='host', type=str, default='79.193.43.206',
-        help='Public IP of the host'
-    )
-    PARSER.add_argument('-port0',
-        metavar='port', type=str, default='80',
-        help='HTTP port of the host public IP'
-    )
-    PARSER.add_argument('-ssl0',type=str, default=None)
-    
-    PARSER.add_argument('-host1',
-        metavar='host', type=str, default='coo.hlxtest.net',
-        help='Public IP of the host'
-    )
-    PARSER.add_argument('-port1',
-        metavar='port', type=str, default='8085',
-        help='HTTP port of the host public IP'
-    )
-    PARSER.add_argument('-ssl1',type=str, default=None)
-
-    ARGS = PARSER.parse_args()
-
-    HTTP = "http://{}:{}"
-    HTTPS = "https://{}:{}"
-
-    if not (ARGS.ssl0 is None):
-        NODE_HTTP_ENDPOINT_A = HTTPS.format(ARGS.host0, ARGS.port0)
-    else:
-        NODE_HTTP_ENDPOINT_A = HTTP.format(ARGS.host0, ARGS.port0)
-    if not (ARGS.ssl1 is None):
-        NODE_HTTP_ENDPOINT_B = HTTPS.format(ARGS.host1, ARGS.port1)
-    else:
-        NODE_HTTP_ENDPOINT_B = HTTP.format(ARGS.host1, ARGS.port1)
-
     while True:
-        _compare_neighbors(NODE_HTTP_ENDPOINT_A, NODE_HTTP_ENDPOINT_B)
-        time.sleep(4.0)
+        responses = {}
+        for node in TESTNET_NODES:
+            responses[node] = _compare_neighbors(node)
+        for node in responses:
+            print(
+                node,
+                responses[node]["currentRoundIndex"],
+                responses[node]["latestSolidRoundIndex"],
+                responses[node]["currentRoundIndex"] - responses[node]["latestSolidRoundIndex"]
+            )
+        time.sleep(5.0)

@@ -30,12 +30,13 @@ def subscribe_to_zmq_topic(node_zmq_endpoint, topic='tx'):
     context = zmq.Context()
     socket = context.socket(zmq.SUB)
     socket.connect(node_zmq_endpoint)
-    socket.setsockopt_string(zmq.SUBSCRIBE, topic)
+    socket.setsockopt_string(zmq.SUBSCRIBE, "")
     client = Scientist(logger)
     while True:
         string = socket.recv_string()
         now_time =  time.time()
         topic, msg = string.split(' ')[0], string.split(' ')[1]
+        logger.info("topic, msg {} {}".format(topic, msg))
         if topic == 'tx_hash': # TODO: need exceptions here
             tx_hash = msg.split('\n')[0]
             client.record_observation( # input

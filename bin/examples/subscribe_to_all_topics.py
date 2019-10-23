@@ -97,25 +97,26 @@ def subscribe_to_zmq_topics(host, port):
     socket.setsockopt_string(zmq.SUBSCRIBE, '')
     while True:
         string = socket.recv_string()
+        print(string)
         data = {string.split(' ')[0]: string.split(' ')[1:]}
         # tx_hash topic from Java MsgQPrvImpl.publishTx
         if 'tx_hash' in data.keys():
             data = converter.convert_to_transaction(data)
-            LOGGER.info("{}".format({"tx_hash": data}))
+            #LOGGER.info("{}".format({"tx_hash": data}))
             continue
         # oracle topic from Java Node.processReceivedData
         if list(data.keys())[0].startswith('ORACLE'):
             data = converter.convert_oracle_topic(data)
-            LOGGER.info("{}".format({"oracle": data}))
+            #LOGGER.info("{}".format({"oracle": data}))
             continue
         # tx topic from where in Java idk??
         match = converter.match_txhash(list(data.keys())[0])
         if match:
             data = json.loads(data[match.string][0])
             data.update({'address': match.string})
-            LOGGER.info("{}".format({"tx": data}))
+            #LOGGER.info("{}".format({"tx": data}))
             continue
-        LOGGER.info("{}".format(data))
+        #LOGGER.info("{}".format(data))
 
 if __name__ == '__main__':
 
@@ -125,7 +126,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--host', metavar='host',
         type=str,
-        default='zmq.hlxtest.net',
+        default='nominee1.hlxtest.net',
         help='IP of host publisher'
     )
     parser.add_argument(

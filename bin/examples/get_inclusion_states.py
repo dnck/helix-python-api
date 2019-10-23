@@ -11,7 +11,7 @@ def get_inclusion_state(node_http_endpoint, transactions=['0'*64]):
 
 def _get_latest_milestone(node_http_endpoint):
     response = API_CLIENT.get_node_info(node_http_endpoint)
-    latest_milestone = response['latestSolidSubtangleMilestone']
+    latest_milestone = response['latestSolidRoundHash']
     return [latest_milestone]
 
 if __name__ == '__main__':
@@ -19,7 +19,7 @@ if __name__ == '__main__':
 
     PARSER = argparse.ArgumentParser(description='Get info from a node.')
     PARSER.add_argument('-host',
-        metavar='host', type=str, default='coo.hlxtest.net',
+        metavar='host', type=str, default='localhost',
         help='Public IP of the host'
     )
     PARSER.add_argument('-port',
@@ -32,7 +32,7 @@ if __name__ == '__main__':
     )
     PARSER.add_argument('-txhash',
         metavar='txhash', type=str, default=\
-        '0000ba8d669f2b4b31d43cd76c9255456e86a8a97705fe8cd2203eb80b9a618c',
+        '0000b00d0aa0103c6f437fb94c0ce69cafd0ded6f2061b63141e98f7dd5637ed',
         help='txhash to check on'
     )
     ARGS = PARSER.parse_args()
@@ -43,5 +43,5 @@ if __name__ == '__main__':
         NODE_HTTP_ENDPOINT = "http://{}:{}".format(ARGS.host, ARGS.port)
 
     TXHASH = [ARGS.txhash]
-    
+
     get_inclusion_state(NODE_HTTP_ENDPOINT, TXHASH)

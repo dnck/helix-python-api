@@ -35,7 +35,7 @@ ALL_ZMQ_TOPICS = [
 
 IO_OPTIONS = {
     'stdout_only': True,
-    'level': 'info',
+    'level': 'debug',
     'parentdir': '/Users/cook/helix/helix-python-api/bin/examples/results',
     'log_filename': 'ctps.log'
 }
@@ -96,8 +96,8 @@ def subscribe_to_zmq_topics(host, port, pending):
     context = zmq.Context()
     socket = context.socket(zmq.SUB)
     socket.connect("tcp://{}:{}".format(host, port))
-    socket.setsockopt_string(zmq.SUBSCRIBE, '')
-
+    socket.setsockopt_string(zmq.SUBSCRIBE, 'tx_hash')
+    # check for new zmq topic
     while True:
         string = socket.recv_string()
         now = datetime.now()
@@ -108,13 +108,12 @@ def subscribe_to_zmq_topics(host, port, pending):
             if data['value'] != '0':
                 value_tx = (data['hash'], now)
                 pending.put(value_tx)
-                LOGGER.info("Incoming value tx_hash: {}".format(value_tx[0]))
-                LOGGER.info("Incoming value address: {}".format(
-                    data["address"]
-                ))
-                LOGGER.info("Incoming value bundleHash: {}".format(
-                    data["bundleHash"]
-                ))
+                LOGGER.info(
+                    "Incoming value bundleHash, tx_hash, address: {} {} {}".\
+                        format(
+                            data["bundleHash"], value_tx[0],  data["address"]
+                        )
+                )
 
 # You can actually randomly sample here - node_http_endpoints
 def get_inclusion_state(api_client, node_http_endpoint, pending):
@@ -141,10 +140,12 @@ def get_inclusion_state(api_client, node_http_endpoint, pending):
             if not confirmed and duration.total_seconds() < UPPERLIMIT:
                 pending.put(tx_hash_local_time)
                 LOGGER.debug(
-                    "Tx pending confirmation: {}. "+\
-                    "Tx will be purged from memory in {} seconds.".\
+                    "Tx pending confirmation: {}. ".format(
+                        tx_hash_local_time[0]
+                    )+\
+                    " Tx will be purged from memory in {} seconds.".\
                         format(
-                            tx_hash_local_time[0], 600-duration.total_seconds()
+                            600-duration.total_seconds()
                         )
                 )
             else:

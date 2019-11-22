@@ -49,7 +49,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '-host', metavar='host',
         type=str,
-        default='nominee1.hlxtest.net',
+        default='zmq.hlxtest.net',
         help='IP of host publisher'
     )
     parser.add_argument(
@@ -63,7 +63,7 @@ if __name__ == '__main__':
         '-topic',
         metavar='topic',
         type=str,
-        default='ctx',
+        default='',
         help='topic to subscribe to'
     )
 

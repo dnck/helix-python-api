@@ -5,25 +5,20 @@ from context import api
 
 def _test_find_transactions(node_http_endpoint,addresses=['0'*64]):
     response = API_CLIENT.find_transaction(node_http_endpoint, addresses)
-    print(len(response['hashes']))
+    #print(len(response['hashes']))
+    return response
 
 
 if __name__ == '__main__':
     API_CLIENT = api.BaseHelixAPI()
 
     PARSER = argparse.ArgumentParser(description='Get info from a node.')
-    PARSER.add_argument('-host',
-        metavar='host', type=str, default='coo.hlxtest.net',
-        help='Public IP of the host'
-    )
-    PARSER.add_argument('-port',
-        metavar='port', type=str, default='8085',
-        help='HTTP port of the host public IP'
-    )
-    PARSER.add_argument('-ssl',
-        metavar='http or https', type=str, default=None,
-        help='http or https'
-    )
+    PARSER.add_argument('host',
+        metavar='host', type=str, default='http://relayer1.hlxtest.net',
+        help='Http endpoint'
+        )
+
+    ARGS = PARSER.parse_args()
     PARSER.add_argument('-address',
         metavar='address', type=str, default=\
         '9474289ae28f0ea6e3b8bedf8fc52f14d2fa9528a4eb29d7879d8709fd2f6d37',
@@ -31,11 +26,10 @@ if __name__ == '__main__':
     )
     ARGS = PARSER.parse_args()
 
-    if not (ARGS.ssl is None):
-        NODE_HTTP_ENDPOINT = "https://{}:{}".format(ARGS.host, ARGS.port)
-    else:
-        NODE_HTTP_ENDPOINT = "http://{}:{}".format(ARGS.host, ARGS.port)
-
     address = [ARGS.address]
-    address = ['49f67174f87f1c7527d54788f0e43d0151b5e160dab8ead5b6d8907ab6b38c6b62c8931e']
-    _test_find_transactions(NODE_HTTP_ENDPOINT,addresses=address)
+
+    address =  \
+        ['00001c4e9f69181db8c1c4b9b5d951bbab25abac8fc2412641215eba16c14281']
+
+    response = _test_find_transactions(ARGS.host,addresses=address)
+    print(response)

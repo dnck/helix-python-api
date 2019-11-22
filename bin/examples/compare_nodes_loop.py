@@ -4,13 +4,13 @@ import time
 from context import api
 
 TESTNET_NODES = [
-    # "https://nominee1.hlxtest.net:8087",
-    "https://relayer1.hlxtest.net:8087",
-    "https://relayer2.hlxtest.net:8087",
-    "https://relayer3.hlxtest.net:8087"
+    #"http://nominee1.helixmain.net:8085",
+    "http://relayer1.helixmain.net:8085",
+    "http://relayer2.helixmain.net:8085",
+    "http://relayer3.helixmain.net:8085"
 ]
 
-def _compare_neighbors(node_http_endpoint):
+def get_sync_metric(node_http_endpoint):
     return API_CLIENT.get_node_info(node_http_endpoint)
 
 
@@ -21,7 +21,7 @@ if __name__ == '__main__':
     while True:
         responses = {}
         for node in TESTNET_NODES:
-            responses[node] = _compare_neighbors(node)
+            responses[node] = get_sync_metric(node)
         for node in responses:
             print(
                 node,

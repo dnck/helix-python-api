@@ -6,17 +6,23 @@ from context import api
 def _compare_neighbors(node_http_endpoint_A, node_http_endpoint_B):
     response_A = API_CLIENT.get_node_info(node_http_endpoint_A)
     response_B = API_CLIENT.get_node_info(node_http_endpoint_B)
-    #print(response_B)
-    print(
-        '-'*16, '\n',
-        node_http_endpoint_A, '\n',
-        'round_idx: '+response_A['currentRoundIndex'], '\n',
-        'solid_round_idx '+response_A['latestSolidRoundIndex'], '\n\n',
-        node_http_endpoint_B, '\n',
-        'round_idx: '+response_B['currentRoundIndex'], '\n',
-        'solid_round_idx: '+response_B['latestSolidRoundIndex'], '\n',
-        '-'*16
+    print("-"*16)
+    print("{}\nround_idx: {}\nsolid_round_idx: {}\nSync = {}".format(
+        node_http_endpoint_A,
+        response_A['currentRoundIndex'],
+        response_A['latestSolidRoundIndex'],
+        response_A['currentRoundIndex'] - response_A['latestSolidRoundIndex'],
+        )
     )
+    print("-"*16)
+    print("{}\nround_idx: {}\nsolid_round_idx: {}\nSync = {}".format(
+        node_http_endpoint_B,
+        response_B['currentRoundIndex'],
+        response_B['latestSolidRoundIndex'],
+        response_B['currentRoundIndex'] - response_B['latestSolidRoundIndex'],
+        )
+    )
+    print("-"*16)
 
 if __name__ == '__main__':
     API_CLIENT = api.BaseHelixAPI()
@@ -28,7 +34,7 @@ if __name__ == '__main__':
         help='Public IP of the host'
     )
     PARSER.add_argument('-port0',
-        metavar='port', type=str, default='80',
+        metavar='port', type=str, default='8085',
         help='HTTP port of the host public IP'
     )
     PARSER.add_argument('-ssl0',type=str, default=None)

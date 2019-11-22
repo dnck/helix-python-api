@@ -2,32 +2,28 @@ import argparse
 
 from context import api
 
+from datetime import datetime
+import time
+
 
 def _get_node_info(node_http_endpoint):
     response = API_CLIENT.get_node_info(node_http_endpoint)
-    print(response)
+    return response
 
 if __name__ == '__main__':
     API_CLIENT = api.BaseHelixAPI()
 
     PARSER = argparse.ArgumentParser(description='Get info from a node.')
-    PARSER.add_argument('-host',
-        metavar='host', type=str, default='nominee1.hlxtest.net',
-        help='Public IP of the host'
-    )
-    PARSER.add_argument('-port',
-        metavar='port', type=str, default='8085',
-        help='HTTP port of the host public IP'
-    )
-    PARSER.add_argument('-ssl',
-        metavar='http or https', type=str, default=None,
-        help='http or https'
-    )
+    PARSER.add_argument('host',
+        metavar='host', type=str, default='http://relayer1.hlxtest.net',
+        help='Http endpoint'
+        )
+
     ARGS = PARSER.parse_args()
 
-    if not (ARGS.ssl is None):
-        NODE_HTTP_ENDPOINT = "https://{}:{}".format(ARGS.host, ARGS.port)
-    else:
-        NODE_HTTP_ENDPOINT = "http://{}:{}".format(ARGS.host, ARGS.port)
-
-    _get_node_info(NODE_HTTP_ENDPOINT)
+    #while True:
+    d = datetime.now().strftime("%H:%M:%S.%s")
+    r = _get_node_info(ARGS.host)
+    #print(d, r["trunkTransaction"]==r["branchTransaction"])
+    print(d, r)
+    #time.sleep(0.01)
